@@ -2,9 +2,9 @@
   "private": true,
   "sideEffects": false,
   "scripts": {
-    "build": "remix build",
-    "dev": "remix dev",
-    "start": "remix-serve build",
+    "build": "remix build --sourcemap",
+    "dev": "remix dev --sourcemap",
+    "start": "remix-serve build --sourcemap",
     "typecheck": "tsc"
   },
   "dependencies": {
@@ -14,7 +14,9 @@
     "@remix-run/serve": "^1.16.0",
     "isbot": "^3.6.8",
     "react": "^18.2.0",
-    "react-dom": "^18.2.0"
+    "react-dom": "^18.2.0",
+    "semantic-ui-css": "^2.5.0",
+    "semantic-ui-react": "^2.1.4"
   },
   "devDependencies": {
     "@remix-run/dev": "^1.16.0",
