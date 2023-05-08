@@ -1,20 +1,25 @@
 import type { V2_MetaFunction } from "@remix-run/node";
-import { Form, Button } from 'semantic-ui-react'
-import { useState } from "react"
+import { Form, Button } from 'semantic-ui-react';
+import { useState } from "react";
+import { useSubmit } from "@remix-run/react";
+import {API} from '../api.tsx'
 
 export const meta: V2_MetaFunction = () => {
   return [{ title: "New Remix App" }];
 }; 
 
+//API.test();
+
 class FetchFormClass {
-    minWidth: string = "";
-    minHeight: string = "";
-    fetchUrl: string = "";
+    maxWidth: string = "";
+    maxHeight: string = "";
+    url: string = "";
 }
 
 export default function Index() {
 
   const [state, setState] = useState(new FetchFormClass);
+  const submitForm = useSubmit();
 
   const onChange = (evt, { name, value }) => {
     //Form submission happens here
@@ -22,32 +27,36 @@ export default function Index() {
     console.log("onChange", state);
   };
 
-  const onSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+  const onSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    console.log(event);
+ 
+    const images = await API.getImages(
+      state.url,
+      state.maxWidth,
+      state.maxHeight
+    );
+    console.log(images);
     //Form submission happens here
   };
-
   return (
     <Form onSubmit={onSubmit}>
-       123123
       <Form.Input
         onChange={onChange}
-        value={state.minWidth}
+        value={state.maxWidth}
         type="text"
-        name="minWidth"
+        name="maxWidth"
       />
       <Form.Input
         onChange={onChange}
-        value={state.minHeight}
+        value={state.maxHeight}
         type="text"
-        name="minHeight"
+        name="maxHeight"
       />
       <Form.Input
         onChange={onChange}
-        value={state.fetchUrl}
+        value={state.url}
         type="text"
-        name="fetchUrl"
+        name="url"
       />
       <Button type="submit" name="url">Fetch</Button>
     </Form>
