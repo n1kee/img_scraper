@@ -10,17 +10,18 @@ import {
   ScrollRestoration,
 } from "@remix-run/react";
 import { useLoaderData } from "@remix-run/react";
+import { json } from "@remix-run/node";
 
 export const links: LinksFunction = () => [
   ...(cssBundleHref ? [{ rel: "stylesheet", href: cssBundleHref }] : []),
 ];
 
 export function loader() {
-  return {
+  return json({
     publicKeys: {
       API_HOST: process.env.API_HOST,
     }
-  };
+  });
 }
 
 export default function App() {
