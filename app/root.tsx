@@ -9,12 +9,22 @@ import {
   Scripts,
   ScrollRestoration,
 } from "@remix-run/react";
+import { useLoaderData } from "@remix-run/react";
 
 export const links: LinksFunction = () => [
   ...(cssBundleHref ? [{ rel: "stylesheet", href: cssBundleHref }] : []),
 ];
 
+export function loader() {
+  return {
+    publicKeys: {
+      API_HOST: process.env.API_HOST,
+    }
+  };
+}
+
 export default function App() {
+  const { publicKeys } = useLoaderData<typeof loader>()
   return (
     <html lang="en">
       <head>
@@ -24,6 +34,11 @@ export default function App() {
         <Links />
       </head>
       <body>
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `window.ENV = ${JSON.stringify(publicKeys)}`,
+          }}
+        />
         <Outlet />
         <ScrollRestoration />
         <Scripts />
