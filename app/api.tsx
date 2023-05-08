@@ -10,7 +10,9 @@ export const API = {
 	    return await fetch(`${apiUrl}?${params}`, {
 	      method: "GET",
 	      mode: "cors"
-	    });
+	    })
+	    .then(response => response.json())
+		.then(data => data.images);
 	},
 }
 

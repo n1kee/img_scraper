@@ -14,6 +14,7 @@ class FetchFormClass {
     maxWidth: string = "";
     maxHeight: string = "";
     url: string = "";
+    images: Array<String>[] = [];
 }
 
 export default function Index() {
@@ -23,8 +24,8 @@ export default function Index() {
 
   const onChange = (evt, { name, value }) => {
     //Form submission happens here
+    console.log("onChange", evt, name, value);
     setState({ ...state, [name]: value });
-    console.log("onChange", state);
   };
 
   const onSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
@@ -35,30 +36,39 @@ export default function Index() {
       state.maxWidth,
       state.maxHeight
     );
-    console.log(images);
+    console.log("IMAGES", images);
+    onChange(event, { name: "images", value: images });
+    console.log("NEW STATE", state);
     //Form submission happens here
   };
   return (
-    <Form onSubmit={onSubmit}>
-      <Form.Input
-        onChange={onChange}
-        value={state.maxWidth}
-        type="text"
-        name="maxWidth"
-      />
-      <Form.Input
-        onChange={onChange}
-        value={state.maxHeight}
-        type="text"
-        name="maxHeight"
-      />
-      <Form.Input
-        onChange={onChange}
-        value={state.url}
-        type="text"
-        name="url"
-      />
-      <Button type="submit" name="url">Fetch</Button>
-    </Form>
+    <div>
+      <Form onSubmit={onSubmit}>
+        <Form.Input
+          onChange={onChange}
+          value={state.maxWidth}
+          type="text"
+          name="maxWidth"
+        />
+        <Form.Input
+          onChange={onChange}
+          value={state.maxHeight}
+          type="text"
+          name="maxHeight"
+        />
+        <Form.Input
+          onChange={onChange}
+          value={state.url}
+          type="text"
+          name="url"
+        />
+        <Button type="submit" name="url">Fetch</Button>
+      </Form>
+      {
+        state.images.map(function(imageUrl, i){
+          return <img src={imageUrl} />;
+        })
+      }
+    </div>
   );
 }
