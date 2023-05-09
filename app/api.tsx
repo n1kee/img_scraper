@@ -1,11 +1,11 @@
 
 export const API = {
-	getImages: async (url: string, maxWidth: int, maxHeight: int) => {
+	getImages: async (url: string, minWidth: int, minHeight: int) => {
 	    const apiUrl = ENV.API_HOST + "/fetch-images";
 	    const params = new URLSearchParams({
 	    	url,
-	    	"max-width": maxWidth,
-	    	"max-height": maxHeight
+	    	"min-width": minWidth,
+	    	"min-height": minHeight
 	    });
 	    return await fetch(`${apiUrl}?${params}`, {
 	      method: "GET",

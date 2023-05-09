@@ -2,17 +2,15 @@ import type { V2_MetaFunction } from "@remix-run/node";
 import { Form, Button } from 'semantic-ui-react';
 import { useState } from "react";
 import { useSubmit } from "@remix-run/react";
-import {API} from '../api.tsx'
+import { API } from '../api.tsx'
 
 export const meta: V2_MetaFunction = () => {
   return [{ title: "New Remix App" }];
 }; 
 
-//API.test();
-
 class FetchFormClass {
-    maxWidth: string = "";
-    maxHeight: string = "";
+    minWidth: string = "";
+    minHeight: string = "";
     url: string = "";
     images: Array<String>[] = [];
 }
@@ -33,8 +31,8 @@ export default function Index() {
  
     const images = await API.getImages(
       state.url,
-      state.maxWidth,
-      state.maxHeight
+      state.minWidth,
+      state.minHeight
     );
     console.log("IMAGES", images);
     onChange(event, { name: "images", value: images });
@@ -46,15 +44,15 @@ export default function Index() {
       <Form onSubmit={onSubmit}>
         <Form.Input
           onChange={onChange}
-          value={state.maxWidth}
+          value={state.minWidth}
           type="text"
-          name="maxWidth"
+          name="minWidth"
         />
         <Form.Input
           onChange={onChange}
-          value={state.maxHeight}
+          value={state.minHeight}
           type="text"
-          name="maxHeight"
+          name="minHeight"
         />
         <Form.Input
           onChange={onChange}
