@@ -29,11 +29,51 @@ export default function Index() {
     ).then(images => { 
       onChange(event, { name: "images", value: images });
     });
+    
+    const bodyElem = document.querySelector("body");
+    bodyElem.onresize = () => {
+      const imgContainers = document.querySelectorAll(".img-container");
+      const pageWidth = bodyElem.clientWidth;
+
+      let imgLine = [];
+      let imgLineWidth = 0;
+
+      imgContainers.forEach((container, idx) => {
+
+        const img = container.querySelector("img");
+
+        let imgWidth = img.clientWidth;
+        if (img.dataset.originalWidth) {
+          imgWidth = +img.dataset.originalWidth;
+        } else {
+          img.dataset.originalWidth = imgWidth;
+          img.style.objectFit = "cover";
+        }
+        const newImgLineWidth = imgLineWidth + imgWidth;
+
+        if (newImgLineWidth > pageWidth) {
+
+          const widthDiff = pageWidth - imgLineWidth - 5;
+
+          imgLine.forEach((lineContainer, lineIdx) => {
+            const lineImg = lineContainer.querySelector("img");
+            const lineImgWidth = +lineImg.dataset.originalWidth;
+            const imgWidthCoeff = lineImgWidth / imgLineWidth;
+            const newWidth = lineImgWidth + imgWidthCoeff * widthDiff;
+            lineContainer.style.width = `${newWidth}px`;
+          });
+          imgLine = [];
+          imgLineWidth = imgWidth;
+        } else {
+          imgLineWidth = newImgLineWidth;
+        }
+        imgLine.push(container);
+      });
+    };
   }, []);
 
   const onChange = (evt, { name, value }) => {
     //Form submission happens here
-    console.log("onChange", evt, name, value);
     setState({ ...state, [name]: value });
   };
 
@@ -45,27 +85,21 @@ export default function Index() {
       state.minWidth,
       state.minHeight
     );
-    console.log("IMAGES", images);
     onChange(event, { name: "images", value: images });
-    console.log("NEW STATE", state);
     //Form submission happens here
 
 
   };
   const gridStyle = {
-    display: "flex",
-    flexFlow: "row wrap",
   };
 
   const containerStyle = {
     display: "inline-block",
     height: "200px",
-    minWidth: "190px",
-    flex: "1",
   };
 
   const imgStyle = {
-    objectFit: "cover",
+    // objectFit: "cover",
     maxHeight: "200px",
     width: "100%",
     height: "100%",
@@ -96,15 +130,14 @@ export default function Index() {
         />
         <Button type="submit" name="url">Fetch</Button>
       </Form>
-      <div style={gridStyle}>
+      <div className="grid" style={gridStyle}>
         {
           state.images.map(function(imageUrl, i){
-            return <div style={containerStyle} class="image-container">
-                    <img key="i" style={imgStyle} src={imageUrl} />
+            return <div key="i" style={containerStyle} className="img-container">
+                    <img style={imgStyle} src={imageUrl} />
                   </div>;
           })
         }
-        <div style={{flex: 2}}></div>
       </div>
     </div>
   );
