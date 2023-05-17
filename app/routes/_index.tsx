@@ -107,7 +107,8 @@ export default function Index() {
     //Form submission happens here
   };
 
-  const gridStyle = {
+  const formStyle = {
+    padding: "20px",
   };
 
   const containerStyle = {
@@ -123,31 +124,43 @@ export default function Index() {
   };
   return (
     <div>
-      <div>
-      <img src="http://localhost:8000/colors-gallery-storage/06094133e100e74b421c3da6e35be07b696c838d3c3bb10a34e1634f33723d87" />
-      </div>
-      <Form onSubmit={onSubmit}>
-        <Form.Input
-          onChange={onChange}
-          value={state.minWidth}
-          type="text"
-          name="minWidth"
-        />
-        <Form.Input
-          onChange={onChange}
-          value={state.minHeight}
-          type="text"
-          name="minHeight"
-        />
-        <Form.Input
-          onChange={onChange}
-          value={state.url}
-          type="text"
-          name="url"
-        />
+      <Form style={formStyle} onSubmit={onSubmit}>
+        <Form.Field>
+          <label>
+            Minimum image width:
+            <input
+              onChange={onChange}
+              value={state.minWidth}
+              type="text"
+              name="minWidth"
+            />
+          </label>
+        </Form.Field>
+        <Form.Field>
+          <label>
+            Minimum image height:
+            <input
+              onChange={onChange}
+              value={state.minHeight}
+              type="text"
+              name="minHeight"
+            />
+          </label>
+        </Form.Field>
+        <Form.Field>
+          <label>
+            URL:
+            <input
+              onChange={onChange}
+              value={state.url}
+              type="text"
+              name="url"
+            />
+          </label>
+        </Form.Field>
         <Button type="submit" name="url">Fetch</Button>
       </Form>
-      <div className="grid" style={gridStyle}>
+      <div className="grid">
         {
           state.images.map(function(imageUrl, i){
             return <div key={i} style={containerStyle} className={imgContainerClass}>
