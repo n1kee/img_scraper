@@ -95,6 +95,10 @@ export default function Index() {
     setState({ ...state, [name]: value });
   };
 
+  const onInputChange = evt => {
+    onChange(evt, { name: evt.target.name, value: evt.target.value });
+  };
+
   const onSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
  
@@ -129,7 +133,7 @@ export default function Index() {
           <label>
             Minimum image width:
             <input
-              onChange={onChange}
+              onChange={onInputChange}
               value={state.minWidth}
               type="text"
               name="minWidth"
@@ -140,7 +144,7 @@ export default function Index() {
           <label>
             Minimum image height:
             <input
-              onChange={onChange}
+              onChange={onInputChange}
               value={state.minHeight}
               type="text"
               name="minHeight"
@@ -151,7 +155,7 @@ export default function Index() {
           <label>
             URL:
             <input
-              onChange={onChange}
+              onChange={onInputChange}
               value={state.url}
               type="text"
               name="url"
