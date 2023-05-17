@@ -18,8 +18,70 @@ class FetchFormClass {
 
 export default function Index() {
 
+  const imgContainerClass = "img-container";
+  const imgLoadedClass = "img--loaded";
   const [state, setState] = useState(new FetchFormClass);
   const submitForm = useSubmit();
+
+  const allImagesLoaded = () => {
+    const grid = document.querySelector(".grid");
+    const imgsNum = grid
+      .querySelectorAll(`.${imgContainerClass}`)
+      .length;
+    const loadedImgsNum = grid
+      .querySelectorAll(`.${imgLoadedClass}`)
+      .length;
+    return imgsNum === loadedImgsNum;
+  };
+
+  const onImgResize = () => {
+    const bodyElem = document.querySelector("body");
+    const imgContainers = document
+      .querySelectorAll(`.${imgContainerClass}`);
+    const pageWidth = bodyElem.clientWidth - 5;
+    let imgLine = [];
+    let imgLineWidth = 0;
+
+    imgContainers.forEach((container, idx) => {
+
+      const img = container.querySelector("img");
+
+      const imgWidth = +img.dataset.originalWidth;
+      const newImgLineWidth = imgLineWidth + imgWidth;
+
+      if (newImgLineWidth > pageWidth) {
+
+        const widthDiff = pageWidth - imgLineWidth;
+
+        imgLine.forEach((lineContainer, lineIdx) => {
+          const lineImg = lineContainer.querySelector("img");
+          const lineImgWidth = +lineImg.dataset.originalWidth;
+          const imgWidthCoeff = lineImgWidth / imgLineWidth;
+          const newWidth = lineImgWidth + imgWidthCoeff * widthDiff;
+          lineContainer.style.width = `${newWidth}px`;
+        });
+        imgLine = [];
+        imgLineWidth = imgWidth;
+      } else {
+        imgLineWidth = newImgLineWidth;
+      }
+      imgLine.push(container);
+    });
+  };
+
+  const onImgLoad = ({target: img}) => {
+    const clientWidth = img.clientWidth;
+    if (!img.classList.contains(imgLoadedClass)) {
+      img.dataset.originalWidth = clientWidth;
+      img.style.objectFit = "cover";
+      img.classList.add(imgLoadedClass);
+    }
+    if (allImagesLoaded()) {
+      const bodyElem = document.querySelector("body");
+      bodyElem.onresize = onImgResize;
+      onImgResize();
+    }
+  };
 
   useEffect(() => {
     API.getImages(
@@ -29,47 +91,6 @@ export default function Index() {
     ).then(images => { 
       onChange(event, { name: "images", value: images });
     });
-    
-    const bodyElem = document.querySelector("body");
-    bodyElem.onresize = () => {
-      const imgContainers = document.querySelectorAll(".img-container");
-      const pageWidth = bodyElem.clientWidth;
-
-      let imgLine = [];
-      let imgLineWidth = 0;
-
-      imgContainers.forEach((container, idx) => {
-
-        const img = container.querySelector("img");
-
-        let imgWidth = img.clientWidth;
-        if (img.dataset.originalWidth) {
-          imgWidth = +img.dataset.originalWidth;
-        } else {
-          img.dataset.originalWidth = imgWidth;
-          img.style.objectFit = "cover";
-        }
-        const newImgLineWidth = imgLineWidth + imgWidth;
-
-        if (newImgLineWidth > pageWidth) {
-
-          const widthDiff = pageWidth - imgLineWidth - 5;
-
-          imgLine.forEach((lineContainer, lineIdx) => {
-            const lineImg = lineContainer.querySelector("img");
-            const lineImgWidth = +lineImg.dataset.originalWidth;
-            const imgWidthCoeff = lineImgWidth / imgLineWidth;
-            const newWidth = lineImgWidth + imgWidthCoeff * widthDiff;
-            lineContainer.style.width = `${newWidth}px`;
-          });
-          imgLine = [];
-          imgLineWidth = imgWidth;
-        } else {
-          imgLineWidth = newImgLineWidth;
-        }
-        imgLine.push(container);
-      });
-    };
   }, []);
 
   const onChange = (evt, { name, value }) => {
@@ -87,8 +108,6 @@ export default function Index() {
     );
     onChange(event, { name: "images", value: images });
     //Form submission happens here
-
-
   };
   const gridStyle = {
   };
@@ -133,8 +152,8 @@ export default function Index() {
       <div className="grid" style={gridStyle}>
         {
           state.images.map(function(imageUrl, i){
-            return <div key="i" style={containerStyle} className="img-container">
-                    <img style={imgStyle} src={imageUrl} />
+            return <div key={i} style={containerStyle} className={imgContainerClass}>
+                    <img onLoad={onImgLoad} style={imgStyle} src={imageUrl} />
                   </div>;
           })
         }
