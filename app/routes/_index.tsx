@@ -113,7 +113,7 @@ export default function Index() {
   };
 
   const containerStyle = {
-    display: "inline-block",
+    float: "left",
     height: "200px",
   };
 
