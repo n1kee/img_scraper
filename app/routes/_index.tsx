@@ -84,13 +84,10 @@ export default function Index() {
   };
 
   useEffect(() => {
-    API.getImages(
-      "http://localhost:3000/",
-      state.minWidth,
-      state.minHeight
-    ).then(images => { 
-      onChange(event, { name: "images", value: images });
-    });
+    API.getAllImages()
+      .then(images => { 
+        onChange(event, { name: "images", value: images });
+      });
   }, []);
 
   const onChange = (evt, { name, value }) => {
@@ -109,6 +106,7 @@ export default function Index() {
     onChange(event, { name: "images", value: images });
     //Form submission happens here
   };
+
   const gridStyle = {
   };
 

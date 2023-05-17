@@ -1,14 +1,19 @@
 
 export const API = {
-	getImages: async (url: string, minWidth: int, minHeight: int) => {
-	    const apiUrl = ENV.API_HOST + "/fetch-images";
-	    const params = new URLSearchParams({
+	getAllImages: async function() {
+		return this.get("images");
+	},
+	getImages: async function(url: string, minWidth: int, minHeight: int){
+		return this.get("images", {
 	    	url,
-	    	t: + new Date, 
 	    	"min-width": minWidth,
 	    	"min-height": minHeight,
 	    });
-	    return await fetch(`${apiUrl}?${params}`, {
+	},
+	get: async function(path: string, params: object = {}) {
+	    const apiUrl = ENV.API_HOST + `/${path}`;
+	    const paramsStr = new URLSearchParams(params);
+	    return await fetch(`${apiUrl}?${paramsStr}`, {
 	      method: "GET",
 	      mode: "cors"
 	    })
