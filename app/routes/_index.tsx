@@ -37,10 +37,8 @@ export default function Index() {
 
   const onImgResize = () => {
     const bodyElem = document.querySelector("body");
-    const imgContainers = document
-      .querySelectorAll(`.${imgContainerClass}`);
+    const imgContainers = document.querySelectorAll(`.${imgContainerClass}`);
     const pageWidth = bodyElem.clientWidth - 5;
-    // const imgLineList = [];
     let imgLine = [];
     let imgLineWidth = 0;
 
@@ -48,13 +46,6 @@ export default function Index() {
     let rowsNum = Math.ceil(imgWidth.get("total") / pageWidth);
     let freeWidth = rowsNum * pageWidth;
     let originalImgLineWidth = 0;
-    // const imgWidthDiff = totalImgWidth - 
-    
-    // if (Math.round(imgWidthDiff) > imgWidthDiff) {
-    //   rowsNum = Math.ceil(imgWidthDiff);
-    // } else {
-      // rowsNum = Math.floor(imgWidthDiff);
-    // }
 
     imgContainers.forEach(container => {
 
@@ -70,20 +61,17 @@ export default function Index() {
       img.dataset.calculatedWidth = newImgWidth;
       imgLine.push(container);
 
-      console.log("$$$", totalImgWidth, freeWidth);
-
       if (newImgLineWidth >= pageWidth) {
 
-        const widthDiff = pageWidth - newImgLineWidth;
+        const rowDiff = pageWidth - newImgLineWidth;
 
         imgLine.forEach((lineContainer, lineIdx) => {
           const lineImg = lineContainer.querySelector("img");
           const lineImgWidth = +lineImg.dataset.calculatedWidth;
           const imgWidthCoeff = lineImgWidth / newImgLineWidth;
-          const newWidth = lineImgWidth + imgWidthCoeff * widthDiff;
+          const newWidth = lineImgWidth + imgWidthCoeff * rowDiff;
           lineContainer.style.width = `${newWidth}px`;
         });
-        // imgLineList.push(imgLine);
         imgLine = [];
         totalImgWidth -= originalImgLineWidth;
         freeWidth -= pageWidth;
@@ -93,33 +81,6 @@ export default function Index() {
         imgLineWidth = newImgLineWidth;
       }
     });
-
-    // imgContainers.forEach((container, idx) => {
-
-    //   const img = container.querySelector("img");
-
-    //   const imgWidth = +img.dataset.originalWidth;
-    //   const newImgLineWidth = imgLineWidth + imgWidth;
-
-    //   if (newImgLineWidth > pageWidth) {
-
-    //     const widthDiff = pageWidth - imgLineWidth;
-
-    //     imgLine.forEach((lineContainer, lineIdx) => {
-    //       const lineImg = lineContainer.querySelector("img");
-    //       const lineImgWidth = +lineImg.dataset.originalWidth;
-    //       const imgWidthCoeff = lineImgWidth / imgLineWidth;
-    //       const newWidth = lineImgWidth + imgWidthCoeff * widthDiff;
-    //       lineContainer.style.width = `${newWidth}px`;
-    //     });
-    //     imgLineList.push(imgLine);
-    //     imgLine = [];
-    //     imgLineWidth = imgWidth;
-    //   } else {
-    //     imgLineWidth = newImgLineWidth;
-    //   }
-    //   imgLine.push(container);
-    // });
   };
 
   const onImgLoad = ({target: img}) => {
