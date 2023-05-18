@@ -144,7 +144,9 @@ export default function Index() {
                 onChange={onInputChange}
                 value={state.minWidth}
                 name="minWidth"
+                type="number"
                 pattern="\d+"
+                required
               />
             </label>
           </Form.Field>
@@ -156,8 +158,9 @@ export default function Index() {
                 value={state.minHeight}
                 name="minHeight"
                 mask="9999"
+                type="number"
                 pattern="\d+"
-                alwaysShowMask="false"
+                required
               />
             </label>
           </Form.Field>
@@ -168,8 +171,10 @@ export default function Index() {
                 onChange={onInputChange}
                 value={state.url}
                 name="url"
+                type="url"
                 pattern="https?://.+"
                 placeholder="http://example.com"
+                required
               />
             </label>
           </Form.Field>
