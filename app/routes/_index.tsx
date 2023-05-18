@@ -33,7 +33,6 @@ export default function Index() {
   };
 
   const onImgResize = () => {
-    console.log("onImgResize");
     const bodyElem = document.querySelector("body");
     const imgContainers = document.querySelectorAll(`.${imgContainerClass}`);
     const pageWidth = bodyElem.clientWidth - 5;
@@ -41,11 +40,11 @@ export default function Index() {
     let imgLineWidth = 0;
 
     let totalImgWidth = imgWidthRef.current.get("total");
-    let rowsNum = Math.round(imgWidthRef.current.get("total") / pageWidth);
+    let rowsNum = Math.floor(imgWidthRef.current.get("total") / pageWidth);
     let freeWidth = rowsNum * pageWidth;
     let originalImgLineWidth = 0;
 
-    imgContainers.forEach(container => {
+    imgContainers.forEach((container, idx) => {
 
       const img = container.querySelector("img");
 
@@ -58,8 +57,10 @@ export default function Index() {
       const newImgLineWidth = imgLineWidth + newImgWidth;
       img.dataset.calculatedWidth = newImgWidth;
       imgLine.push(container);
+      const pageOverflow = newImgLineWidth >= pageWidth;
+      const theLastElement = idx === imgContainers.length - 1;
 
-      if (newImgLineWidth >= pageWidth) {
+      if (pageOverflow || theLastElement) {
 
         const rowDiff = pageWidth - newImgLineWidth;
 
@@ -92,9 +93,7 @@ export default function Index() {
       const totalImgWidth = imgWidthRef.current.get("total") || 0;
       imgWidthRef.current.set("total", totalImgWidth + clientWidth);
     }
-    console.log("onImgLoad", imgWidthRef.current.size);
     if (allImagesLoaded()) {
-      console.log("allImagesLoaded");
       const bodyElem = document.querySelector("body");
       bodyElem.onresize = onImgResize;
       onImgResize();
