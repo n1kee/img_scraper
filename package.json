@@ -2,7 +2,7 @@
   "private": true,
   "sideEffects": false,
   "scripts": {
-    "build": "remix build --sourcemap",
+    "build": "remix build",
     "dev": "remix dev --sourcemap",
     "start": "remix-serve build --sourcemap",
     "typecheck": "tsc"
