@@ -6,7 +6,7 @@ import { API } from '../api.tsx';
 import { useEffect } from 'react';
 
 export const meta: V2_MetaFunction = () => {
-  return [{ title: "New Remix App" }];
+  return [{ title: "Image Scraper" }];
 }; 
 
 class FetchFormClass {
@@ -22,6 +22,7 @@ export default function Index() {
   const imgLoadedClass = "img--loaded";
   const [state, setState] = useState(new FetchFormClass);
   const submitForm = useSubmit();
+  const imgWidth = new Map;
 
   const allImagesLoaded = () => {
     const grid = document.querySelector(".grid");
@@ -39,34 +40,86 @@ export default function Index() {
     const imgContainers = document
       .querySelectorAll(`.${imgContainerClass}`);
     const pageWidth = bodyElem.clientWidth - 5;
+    // const imgLineList = [];
     let imgLine = [];
     let imgLineWidth = 0;
 
-    imgContainers.forEach((container, idx) => {
+    let totalImgWidth = imgWidth.get("total");
+    let rowsNum = Math.ceil(imgWidth.get("total") / pageWidth);
+    let freeWidth = rowsNum * pageWidth;
+    let originalImgLineWidth = 0;
+    // const imgWidthDiff = totalImgWidth - 
+    
+    // if (Math.round(imgWidthDiff) > imgWidthDiff) {
+    //   rowsNum = Math.ceil(imgWidthDiff);
+    // } else {
+      // rowsNum = Math.floor(imgWidthDiff);
+    // }
+
+    imgContainers.forEach(container => {
 
       const img = container.querySelector("img");
 
+      const widthDiff = totalImgWidth - freeWidth;
+
       const imgWidth = +img.dataset.originalWidth;
-      const newImgLineWidth = imgLineWidth + imgWidth;
+      originalImgLineWidth += imgWidth;
+      const imgWidthCoeff = imgWidth / totalImgWidth;
+      const newImgWidth = imgWidth - imgWidthCoeff * widthDiff;
+      const newImgLineWidth = imgLineWidth + newImgWidth;
+      img.dataset.calculatedWidth = newImgWidth;
+      imgLine.push(container);
 
-      if (newImgLineWidth > pageWidth) {
+      console.log("$$$", totalImgWidth, freeWidth);
 
-        const widthDiff = pageWidth - imgLineWidth;
+      if (newImgLineWidth >= pageWidth) {
+
+        const widthDiff = pageWidth - newImgLineWidth;
 
         imgLine.forEach((lineContainer, lineIdx) => {
           const lineImg = lineContainer.querySelector("img");
-          const lineImgWidth = +lineImg.dataset.originalWidth;
-          const imgWidthCoeff = lineImgWidth / imgLineWidth;
+          const lineImgWidth = +lineImg.dataset.calculatedWidth;
+          const imgWidthCoeff = lineImgWidth / newImgLineWidth;
           const newWidth = lineImgWidth + imgWidthCoeff * widthDiff;
           lineContainer.style.width = `${newWidth}px`;
         });
+        // imgLineList.push(imgLine);
         imgLine = [];
-        imgLineWidth = imgWidth;
+        totalImgWidth -= originalImgLineWidth;
+        freeWidth -= pageWidth;
+        imgLineWidth = 0;
+        originalImgLineWidth = 0;
       } else {
         imgLineWidth = newImgLineWidth;
       }
-      imgLine.push(container);
     });
+
+    // imgContainers.forEach((container, idx) => {
+
+    //   const img = container.querySelector("img");
+
+    //   const imgWidth = +img.dataset.originalWidth;
+    //   const newImgLineWidth = imgLineWidth + imgWidth;
+
+    //   if (newImgLineWidth > pageWidth) {
+
+    //     const widthDiff = pageWidth - imgLineWidth;
+
+    //     imgLine.forEach((lineContainer, lineIdx) => {
+    //       const lineImg = lineContainer.querySelector("img");
+    //       const lineImgWidth = +lineImg.dataset.originalWidth;
+    //       const imgWidthCoeff = lineImgWidth / imgLineWidth;
+    //       const newWidth = lineImgWidth + imgWidthCoeff * widthDiff;
+    //       lineContainer.style.width = `${newWidth}px`;
+    //     });
+    //     imgLineList.push(imgLine);
+    //     imgLine = [];
+    //     imgLineWidth = imgWidth;
+    //   } else {
+    //     imgLineWidth = newImgLineWidth;
+    //   }
+    //   imgLine.push(container);
+    // });
   };
 
   const onImgLoad = ({target: img}) => {
@@ -75,6 +128,9 @@ export default function Index() {
       img.dataset.originalWidth = clientWidth;
       img.style.objectFit = "cover";
       img.classList.add(imgLoadedClass);
+      imgWidth.set(img.src, clientWidth);
+      const totalImgWidth = imgWidth.get("total") || 0;
+      imgWidth.set("total", totalImgWidth + clientWidth);
     }
     if (allImagesLoaded()) {
       const bodyElem = document.querySelector("body");
