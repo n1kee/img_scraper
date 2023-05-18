@@ -3,7 +3,7 @@ import { Form, Button } from 'semantic-ui-react';
 import { useState } from "react";
 import { useSubmit } from "@remix-run/react";
 import { API } from '../api.tsx';
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 
 export const meta: V2_MetaFunction = () => {
   return [{ title: "Image Scraper" }];
@@ -22,28 +22,26 @@ export default function Index() {
   const imgLoadedClass = "img--loaded";
   const [state, setState] = useState(new FetchFormClass);
   const submitForm = useSubmit();
-  const imgWidth = new Map;
+  const imgWidthRef = useRef(new Map);
 
   const allImagesLoaded = () => {
     const grid = document.querySelector(".grid");
-    const imgsNum = grid
-      .querySelectorAll(`.${imgContainerClass}`)
-      .length;
     const loadedImgsNum = grid
       .querySelectorAll(`.${imgLoadedClass}`)
       .length;
-    return imgsNum === loadedImgsNum;
+    return state.images.length === loadedImgsNum;
   };
 
   const onImgResize = () => {
+    console.log("onImgResize");
     const bodyElem = document.querySelector("body");
     const imgContainers = document.querySelectorAll(`.${imgContainerClass}`);
     const pageWidth = bodyElem.clientWidth - 5;
     let imgLine = [];
     let imgLineWidth = 0;
 
-    let totalImgWidth = imgWidth.get("total");
-    let rowsNum = Math.ceil(imgWidth.get("total") / pageWidth);
+    let totalImgWidth = imgWidthRef.current.get("total");
+    let rowsNum = Math.round(imgWidthRef.current.get("total") / pageWidth);
     let freeWidth = rowsNum * pageWidth;
     let originalImgLineWidth = 0;
 
@@ -84,16 +82,19 @@ export default function Index() {
   };
 
   const onImgLoad = ({target: img}) => {
+    
     const clientWidth = img.clientWidth;
     if (!img.classList.contains(imgLoadedClass)) {
       img.dataset.originalWidth = clientWidth;
       img.style.objectFit = "cover";
       img.classList.add(imgLoadedClass);
-      imgWidth.set(img.src, clientWidth);
-      const totalImgWidth = imgWidth.get("total") || 0;
-      imgWidth.set("total", totalImgWidth + clientWidth);
+      imgWidthRef.current.set(img.src, clientWidth);
+      const totalImgWidth = imgWidthRef.current.get("total") || 0;
+      imgWidthRef.current.set("total", totalImgWidth + clientWidth);
     }
+    console.log("onImgLoad", imgWidthRef.current.size);
     if (allImagesLoaded()) {
+      console.log("allImagesLoaded");
       const bodyElem = document.querySelector("body");
       bodyElem.onresize = onImgResize;
       onImgResize();
@@ -101,7 +102,7 @@ export default function Index() {
   };
 
   useEffect(() => {
-
+    window.onImgResize = onImgResize;
     API.getAllImages()
       .then(images => { 
         onChange(event, { name: "images", value: images });

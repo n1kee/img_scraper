@@ -18,7 +18,14 @@ export const API = {
 	      mode: "cors"
 	    })
 	    .then(response => response.json())
-		.then(data => data.images);
+		.then(data => data.images)
+		.catch(error => {
+			const msg = `
+An unexpected error occured !
+Please try again later
+`;
+		  	alert(msg);
+		});
 	},
 }
 
