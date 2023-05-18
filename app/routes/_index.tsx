@@ -84,14 +84,20 @@ export default function Index() {
   };
 
   useEffect(() => {
+
     API.getAllImages()
       .then(images => { 
         onChange(event, { name: "images", value: images });
       });
-  }, []);
+  }, []); 
+
+  const toggleDimmer = () => {
+      const dimmer = document.querySelector(".dimmer");
+      dimmer.classList.toggle("disabled");
+      dimmer.classList.toggle("active");
+  };
 
   const onChange = (evt, { name, value }) => {
-    //Form submission happens here
     setState({ ...state, [name]: value });
   };
 
@@ -101,6 +107,8 @@ export default function Index() {
 
   const onSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
+
+    toggleDimmer();
  
     const images = await API.getImages(
       state.url,
@@ -108,7 +116,7 @@ export default function Index() {
       state.minHeight
     );
     onChange(event, { name: "images", value: images });
-    //Form submission happens here
+    toggleDimmer();
   };
 
   const formStyle = {
@@ -121,49 +129,56 @@ export default function Index() {
   };
 
   const imgStyle = {
-    // objectFit: "cover",
     maxHeight: "200px",
     width: "100%",
     height: "100%",
   };
   return (
     <div>
+      <div className="ui segment">
       <Form style={formStyle} onSubmit={onSubmit}>
-        <Form.Field>
-          <label>
-            Minimum image width:
-            <input
-              onChange={onInputChange}
-              value={state.minWidth}
-              type="text"
-              name="minWidth"
-            />
-          </label>
-        </Form.Field>
-        <Form.Field>
-          <label>
-            Minimum image height:
-            <input
-              onChange={onInputChange}
-              value={state.minHeight}
-              type="text"
-              name="minHeight"
-            />
-          </label>
-        </Form.Field>
-        <Form.Field>
-          <label>
-            URL:
-            <input
-              onChange={onInputChange}
-              value={state.url}
-              type="text"
-              name="url"
-            />
-          </label>
-        </Form.Field>
-        <Button type="submit" name="url">Fetch</Button>
-      </Form>
+          <Form.Field>
+            <label>
+              Minimum image width:
+              <input
+                onChange={onInputChange}
+                value={state.minWidth}
+                name="minWidth"
+                pattern="\d+"
+              />
+            </label>
+          </Form.Field>
+          <Form.Field>
+            <label>
+              Minimum image height:
+              <input
+                onChange={onInputChange}
+                value={state.minHeight}
+                name="minHeight"
+                mask="9999"
+                pattern="\d+"
+                alwaysShowMask="false"
+              />
+            </label>
+          </Form.Field>
+          <Form.Field>
+            <label>
+              URL:
+              <input
+                onChange={onInputChange}
+                value={state.url}
+                name="url"
+                pattern="https?://.+"
+                placeholder="http://example.com"
+              />
+            </label>
+          </Form.Field>
+          <Button type="submit" name="url">Fetch</Button>
+        </Form>
+        <div className="ui disabled dimmer">
+          <div className="ui text loader">Loading, please wait ...</div>
+        </div>
+      </div>
       <div className="grid">
         {
           state.images.map(function(imageUrl, i){
@@ -172,6 +187,7 @@ export default function Index() {
                   </div>;
           })
         }
+        <div style={{clear: "both"}}></div>
       </div>
     </div>
   );
