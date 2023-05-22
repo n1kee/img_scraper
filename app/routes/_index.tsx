@@ -5,10 +5,22 @@ import { useSubmit } from "@remix-run/react";
 import { API } from '../api.tsx';
 import { useEffect, useRef } from 'react';
 
+/**
+ * Meta data of the web page.
+ */
 export const meta: V2_MetaFunction = () => {
   return [{ title: "Image Scraper" }];
 }; 
 
+/**
+ * Represents a Fetch form.
+ * @typedef FetchFormClass
+ * @constructor
+ * @property {string} minWidth - Minimum width of images to be loaded.
+ * @property {string} minHeight - Minimum height of images to be loaded.
+ * @property {string} url - URL of the webpage where to get images from.
+ * @property {String[]} images - List of downloaded image URL's.
+ */
 class FetchFormClass {
     isLoading: bool = true;
     minWidth: string = "200";
@@ -17,6 +29,12 @@ class FetchFormClass {
     images: Array<String>[] = [];
 }
 
+
+/**
+ * Represents an Index page component.
+ * @typedef FetchFormClass
+ * @constructor
+ */
 export default function Index() {
 
   const imgContainerClass = "img-container";
@@ -25,10 +43,18 @@ export default function Index() {
   const submitForm = useSubmit();
   const imgWidthRef = useRef(new Map);
 
+  /**
+   * Returns loader's status.
+   * @returns {string} - Loader status class string.
+   */
   const getLoaderStatus = () => {
     return state.isLoading ? 'active' : 'disabled';
   };
 
+  /**
+   * Checks if all images has been loaded.
+   * @returns {bool} - Indicates if all images has been loaded.
+   */
   const allImagesLoaded = () => {
     const grid = document.querySelector(".grid");
     const loadedImgsNum = grid
@@ -37,6 +63,9 @@ export default function Index() {
     return state.images.length === loadedImgsNum;
   };
 
+  /**
+   * Handles positioning and sizing of images.
+   */
   const onImgResize = () => {
     const bodyElem = document.querySelector("body");
     const imgContainers = document.querySelectorAll(`.${imgContainerClass}`);
@@ -57,6 +86,7 @@ export default function Index() {
 
       const imgWidth = +img.dataset.originalWidth;
       originalImgLineWidth += imgWidth;
+      // Collect images line by line and resize them on line overflow.
       const imgWidthCoeff = imgWidth / totalImgWidth;
       const newImgWidth = imgWidth - imgWidthCoeff * widthDiff;
       const newImgLineWidth = imgLineWidth + newImgWidth;
@@ -87,6 +117,10 @@ export default function Index() {
     });
   };
 
+  /**
+   * Callback for the image load event
+   * @param {Event} - Onload event. 
+   */
   const onImgLoad = ({target: img}) => {
     
     const clientWidth = img.clientWidth;
@@ -106,21 +140,33 @@ export default function Index() {
   };
 
   useEffect(() => {
-
+    // Get all stored images on a page load.
     API.getAllImages()
       .then(images => { 
         updateState({ images, isLoading: false });
       });
   }, []); 
 
+  /**
+   * Updates the state
+   * @param {object} stateUpdate - State property updates. 
+   */
   const updateState = stateUpdate => {
     setState({ ...state, ...stateUpdate });
   };
 
+  /**
+   * Handles an input change.
+   * @param {Event} evt - Input change event. 
+   */
   const onInputChange = evt => {
     updateState({ [evt.target.name]: evt.target.value });
   };
 
+  /**
+   * Handles a form submit.
+   * @param {React.FormEvent} event - Form submit event. 
+   */
   const onSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
 
