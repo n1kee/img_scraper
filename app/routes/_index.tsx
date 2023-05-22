@@ -27,8 +27,8 @@ class FetchFormClass {
     minHeight: string = "200";
     url: string = "https://symfony.com/blog/new-in-symfony-3-3-optional-class-for-named-services";
     images: Array<String>[] = [];
+    imagesInfo: Array<String>[] = [];
 }
-
 
 /**
  * Represents an Index page component.
@@ -42,6 +42,7 @@ export default function Index() {
   const [state, setState] = useState(new FetchFormClass);
   const submitForm = useSubmit();
   const imgWidthRef = useRef(new Map);
+  const imagesInfo = useRef({});
 
   /**
    * Returns loader's status.
@@ -57,9 +58,7 @@ export default function Index() {
    */
   const allImagesLoaded = () => {
     const grid = document.querySelector(".grid");
-    const loadedImgsNum = grid
-      .querySelectorAll(`.${imgLoadedClass}`)
-      .length;
+    const loadedImgsNum = Object.keys(imagesInfo.current).length;
     return state.images.length === loadedImgsNum;
   };
 
@@ -67,8 +66,8 @@ export default function Index() {
    * Handles positioning and sizing of images.
    */
   const onImgResize = () => {
+    console.log("onImgResize");
     const bodyElem = document.querySelector("body");
-    const imgContainers = document.querySelectorAll(`.${imgContainerClass}`);
     const pageWidth = bodyElem.clientWidth - 5;
     let imgLine = [];
     let imgLineWidth = 0;
@@ -78,33 +77,31 @@ export default function Index() {
     let freeWidth = rowsNum * pageWidth;
     let originalImgLineWidth = 0;
 
-    imgContainers.forEach((container, idx) => {
-
-      const img = container.querySelector("img");
+    Object.values(imagesInfo.current).forEach((imageInfo, idx) => {
+      // const img = container.querySelector("img");
 
       const widthDiff = totalImgWidth - freeWidth;
 
-      const imgWidth = +img.dataset.originalWidth;
+      const imgWidth = imageInfo.width;
       originalImgLineWidth += imgWidth;
       // Collect images line by line and resize them on line overflow.
       const imgWidthCoeff = imgWidth / totalImgWidth;
       const newImgWidth = imgWidth - imgWidthCoeff * widthDiff;
       const newImgLineWidth = imgLineWidth + newImgWidth;
-      img.dataset.calculatedWidth = newImgWidth;
-      imgLine.push(container);
+      imageInfo.calculatedWidth = newImgWidth;
+      imgLine.push(imageInfo);
       const pageOverflow = newImgLineWidth >= pageWidth;
-      const theLastElement = idx === imgContainers.length - 1;
+      const theLastElement = idx === (state.images.length - 1);
 
       if (pageOverflow || theLastElement) {
 
         const rowDiff = pageWidth - newImgLineWidth;
 
-        imgLine.forEach((lineContainer, lineIdx) => {
-          const lineImg = lineContainer.querySelector("img");
-          const lineImgWidth = +lineImg.dataset.calculatedWidth;
+        imgLine.forEach((lineImgInfo, lineIdx) => {
+          const lineImgWidth = lineImgInfo.calculatedWidth;
           const imgWidthCoeff = lineImgWidth / newImgLineWidth;
           const newWidth = lineImgWidth + imgWidthCoeff * rowDiff;
-          lineContainer.style.width = `${newWidth}px`;
+          lineImgInfo.calculatedWidth = newWidth;
         });
         imgLine = [];
         totalImgWidth -= originalImgLineWidth;
@@ -115,6 +112,7 @@ export default function Index() {
         imgLineWidth = newImgLineWidth;
       }
     });
+    updateState({ imagesInfo: Object.values(imagesInfo.current) });
   };
 
   /**
@@ -122,19 +120,20 @@ export default function Index() {
    * @param {Event} - Onload event. 
    */
   const onImgLoad = ({target: img}) => {
-    
     const clientWidth = img.clientWidth;
-    if (!img.classList.contains(imgLoadedClass)) {
-      img.dataset.originalWidth = clientWidth;
-      img.style.objectFit = "cover";
-      img.classList.add(imgLoadedClass);
-      imgWidthRef.current.set(img.src, clientWidth);
+    if (!imagesInfo.current[ img.src ]) {
       const totalImgWidth = imgWidthRef.current.get("total") || 0;
       imgWidthRef.current.set("total", totalImgWidth + clientWidth);
+      imagesInfo.current[ img.src ] = {
+        src: img.src,
+        width: img.clientWidth,
+        height: img.clientHeight,
+      };
     }
     if (allImagesLoaded()) {
       const bodyElem = document.querySelector("body");
       bodyElem.onresize = onImgResize;
+      updateState({ imagesInfo: Object.values(imagesInfo.current) });
       onImgResize();
     }
   };
@@ -195,8 +194,8 @@ export default function Index() {
   };
 
   const imgStyle = {
+    objectFit: "cover",
     maxHeight: "200px",
-    width: "100%",
     height: "100%",
   };
   return (
@@ -252,13 +251,32 @@ export default function Index() {
       </div>
       <div className="grid">
         {
-          state.images.map(function(imageUrl, i){
-            return <div key={i} style={containerStyle} className={imgContainerClass}>
-                    <img onLoad={onImgLoad} style={imgStyle} src={imageUrl} />
+          state.imagesInfo.map(function(imageInfo, i){
+            return <div
+                      key={i}
+                      style={containerStyle}
+                      className={imgContainerClass}
+                    >
+                    <img
+                      width={imageInfo.calculatedWidth}
+                      style={imgStyle}
+                      src={imageInfo.src}
+                    />
                   </div>;
           })
         }
         <div style={{clear: "both"}}></div>
+      </div>
+      <div style={{position: "absolute", bottom: "110%"}}>
+        {
+          state.images.map(function(imageUrl, i){
+            return <img
+                      key={i}
+                      onLoad={onImgLoad}
+                      src={imageUrl}
+                  />;
+          })
+        }
       </div>
     </div>
   );
