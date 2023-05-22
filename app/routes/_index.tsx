@@ -101,17 +101,19 @@ export default function Index() {
   };
 
   useEffect(() => {
-    window.onImgResize = onImgResize;
     API.getAllImages()
       .then(images => { 
         onChange(event, { name: "images", value: images });
+        toggleDimmer();
       });
   }, []); 
 
   const toggleDimmer = () => {
-      const dimmer = document.querySelector(".dimmer");
-      dimmer.classList.toggle("disabled");
-      dimmer.classList.toggle("active");
+      setTimeout(() => {
+        const dimmer = document.querySelector(".dimmer");
+        dimmer.classList.toggle("disabled");
+        dimmer.classList.toggle("active");
+      });
   };
 
   const onChange = (evt, { name, value }) => {
@@ -197,7 +199,7 @@ export default function Index() {
           </Form.Field>
           <Button type="submit" name="url">Fetch</Button>
         </Form>
-        <div className="ui disabled dimmer">
+        <div className="ui active dimmer">
           <div className="ui text loader">Loading, please wait ...</div>
         </div>
       </div>
