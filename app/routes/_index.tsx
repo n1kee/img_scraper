@@ -10,6 +10,7 @@ export const meta: V2_MetaFunction = () => {
 }; 
 
 class FetchFormClass {
+    isLoading: bool = true;
     minWidth: string = "200";
     minHeight: string = "200";
     url: string = "https://symfony.com/blog/new-in-symfony-3-3-optional-class-for-named-services";
@@ -23,6 +24,10 @@ export default function Index() {
   const [state, setState] = useState(new FetchFormClass);
   const submitForm = useSubmit();
   const imgWidthRef = useRef(new Map);
+
+  const getLoaderStatus = () => {
+    return state.isLoading ? 'active' : 'disabled';
+  };
 
   const allImagesLoaded = () => {
     const grid = document.querySelector(".grid");
@@ -101,39 +106,37 @@ export default function Index() {
   };
 
   useEffect(() => {
+
     API.getAllImages()
       .then(images => { 
-        onChange(event, { name: "images", value: images });
-        toggleDimmer();
+        updateState({ images, isLoading: false });
       });
   }, []); 
 
-  const toggleDimmer = () => {
-      const dimmer = document.querySelector(".dimmer");
-      dimmer.classList.toggle("disabled");
-      dimmer.classList.toggle("active");
-  };
-
-  const onChange = (evt, { name, value }) => {
-    setState({ ...state, [name]: value });
+  const updateState = stateUpdate => {
+    setState({ ...state, ...stateUpdate });
   };
 
   const onInputChange = evt => {
-    onChange(evt, { name: evt.target.name, value: evt.target.value });
+    updateState({ [evt.target.name]: evt.target.value });
   };
 
   const onSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
 
-    toggleDimmer();
- 
+    updateState({
+      isLoading: true
+    });
+
     const images = await API.getImages(
       state.url,
       state.minWidth,
       state.minHeight
     );
-    onChange(event, { name: "images", value: images });
-    toggleDimmer();
+    updateState({
+      images,
+      isLoading: false
+    });
   };
 
   const formStyle = {
@@ -197,7 +200,7 @@ export default function Index() {
           </Form.Field>
           <Button type="submit" name="url">Fetch</Button>
         </Form>
-        <div className="ui active dimmer">
+        <div className={`ui ${getLoaderStatus()} dimmer`}>
           <div className="ui text loader">Loading, please wait ...</div>
         </div>
       </div>
