@@ -109,11 +109,9 @@ export default function Index() {
   }, []); 
 
   const toggleDimmer = () => {
-      setTimeout(() => {
-        const dimmer = document.querySelector(".dimmer");
-        dimmer.classList.toggle("disabled");
-        dimmer.classList.toggle("active");
-      });
+      const dimmer = document.querySelector(".dimmer");
+      dimmer.classList.toggle("disabled");
+      dimmer.classList.toggle("active");
   };
 
   const onChange = (evt, { name, value }) => {
