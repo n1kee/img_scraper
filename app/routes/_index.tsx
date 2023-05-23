@@ -44,6 +44,7 @@ class FetchFormClass {
     url: string = "https://symfony.com/blog/new-in-symfony-3-3-optional-class-for-named-services";
     images: Array<Image>[] = [];
     imagesUrls: Array<String>[] = [];
+    loadedImagesCount: int = 0;
 }
 
 /**
@@ -59,7 +60,6 @@ export default function Index() {
   const [state, setState] = useState(new FetchFormClass);
   const submitForm = useSubmit();
   const imgWidthRef = useRef(new Map);
-  const images = useRef({});
 
   /**
    * Returns loader's status.
@@ -70,20 +70,21 @@ export default function Index() {
   };
 
   /**
-   * Checks if all imagesUrls has been loaded.
-   * @returns {bool} - Indicates if all imagesUrls has been loaded.
+   * Checks if all images has been loaded.
+   * @returns {bool} - Indicates if all images has been loaded.
    */
   const allImagesLoaded = () => {
     const grid = document.querySelector(".grid");
-    const loadedImgsNum = Object.keys(images.current).length;
-    return state.images.length === loadedImgsNum;
+    const loadedImgsNum = Object.keys(state.images).length;
+    console.log("ALL LOADED", state.images.length, state.loadedImagesCount);
+    return state.images.length === state.loadedImagesCount;
   };
 
   /**
    * Handles positioning and sizing of imagesUrls.
    */
-  const onImgResize = () => {
-    console.log("onImgResize");
+  const resizeGrid = () => {
+    console.log("resizeGrid");
     const bodyElem = document.querySelector("body");
     const pageWidth = bodyElem.clientWidth - 5;
     let imgLine = [];
@@ -94,19 +95,18 @@ export default function Index() {
     let freeWidth = rowsNum * pageWidth;
     let originalImgLineWidth = 0;
 
-    Object.values(images.current).forEach((imageInfo, idx) => {
-      // const img = container.querySelector("img");
+    state.images.forEach((image, idx) => {
 
       const widthDiff = totalImgWidth - freeWidth;
 
-      const imgWidth = imageInfo.width;
+      const imgWidth = image.width;
       originalImgLineWidth += imgWidth;
       // Collect imagesUrls line by line and resize them on line overflow.
       const imgWidthCoeff = imgWidth / totalImgWidth;
       const newImgWidth = imgWidth - imgWidthCoeff * widthDiff;
       const newImgLineWidth = imgLineWidth + newImgWidth;
-      imageInfo.calculatedWidth = newImgWidth;
-      imgLine.push(imageInfo);
+      image.calculatedWidth = newImgWidth;
+      imgLine.push(image);
       const pageOverflow = newImgLineWidth >= pageWidth;
       const theLastElement = idx === (state.images.length - 1);
 
@@ -114,11 +114,11 @@ export default function Index() {
 
         const rowDiff = pageWidth - newImgLineWidth;
 
-        imgLine.forEach((lineImgInfo, lineIdx) => {
-          const lineImgWidth = lineImgInfo.calculatedWidth;
+        imgLine.forEach((lineImg, lineIdx) => {
+          const lineImgWidth = lineImg.calculatedWidth;
           const imgWidthCoeff = lineImgWidth / newImgLineWidth;
           const newWidth = lineImgWidth + imgWidthCoeff * rowDiff;
-          lineImgInfo.calculatedWidth = newWidth;
+          lineImg.calculatedWidth = newWidth;
         });
         imgLine = [];
         totalImgWidth -= originalImgLineWidth;
@@ -129,7 +129,7 @@ export default function Index() {
         imgLineWidth = newImgLineWidth;
       }
     });
-    updateState({ images: Object.values(images.current) });
+    updateState({ });
   };
 
   /**
@@ -137,29 +137,37 @@ export default function Index() {
    * @param {Event} - Onload event. 
    */
   const onImgLoad = ({target: img}) => {
-    const clientWidth = img.clientWidth;
-    if (!images.current[ img.src ]) {
+    const image = state.images[ img.src ];
+    if (!image.isLoaded) {
       const totalImgWidth = imgWidthRef.current.get("total") || 0;
-      imgWidthRef.current.set("total", totalImgWidth + clientWidth);
-      images.current[ img.src ] = {
-        src: img.src,
-        width: img.clientWidth,
-        height: img.clientHeight,
-      };
+      imgWidthRef.current.set("total", totalImgWidth + img.clientWidth);
+      image.src = img.src;
+      image.width = img.clientWidth;
+      image.height = img.clientHeight;
+      image.isLoaded = true;
+      state.loadedImagesCount++;
     }
     if (allImagesLoaded()) {
       const bodyElem = document.querySelector("body");
-      bodyElem.onresize = onImgResize;
-      updateState({ images: Object.values(images.current) });
-      onImgResize();
+      bodyElem.onresize = resizeGrid;
+      resizeGrid();
     }
   };
 
+  const initImages = imagesUrls => {
+    const images = imagesUrls.reduce((result, url) => {
+      const image = state.images[url] || new Image(url);
+      result.push(image);
+      result[url] = image;
+      return result;
+    }, []);
+    return images;
+  };
+
   useEffect(() => {
-    // Get all stored imagesUrls on a page load.
+    // Get all stored images on a page load.
     API.getAllImages()
       .then(imagesUrls => {
-        const images = imagesUrls.map(url => new Image(url));
         updateState({ imagesUrls, isLoading: false });
       });
   }, []); 
@@ -169,6 +177,14 @@ export default function Index() {
    * @param {object} stateUpdate - State property updates. 
    */
   const updateState = stateUpdate => {
+    if (stateUpdate.imagesUrls) {
+      stateUpdate.images = initImages(stateUpdate.imagesUrls);
+    }
+    stateUpdate.loadedCount = (stateUpdate.imagesUrls || [])
+      .reduce((count, img) => {
+        return count + img.isLoaded;
+      }, 0);
+    console.log("UPDATE STATE", stateUpdate);
     setState({ ...state, ...stateUpdate });
   };
 
@@ -269,16 +285,16 @@ export default function Index() {
       </div>
       <div className="grid">
         {
-          state.images.map(function(imageInfo, i){
+          state.images.map(function(image, i){
             return <div
                       key={i}
                       style={containerStyle}
                       className={imgContainerClass}
                     >
                     <img
-                      width={imageInfo.calculatedWidth}
+                      width={image.calculatedWidth}
                       style={imgStyle}
-                      src={imageInfo.src}
+                      src={image.src}
                     />
                   </div>;
           })
