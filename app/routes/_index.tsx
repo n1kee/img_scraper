@@ -13,9 +13,7 @@ export const meta: V2_MetaFunction = () => {
 }; 
 
 /**
- * Represents a Fetch form.
- * @typedef FetchFormClass
- * @constructor
+ * Represents a form for fetching images.
  * @property {string} minWidth - Minimum width of images to be loaded.
  * @property {string} minHeight - Minimum height of images to be loaded.
  * @property {string} url - URL of the webpage where to get images from.
@@ -32,8 +30,6 @@ class FetchFormClass {
 
 /**
  * Represents an Index page component.
- * @typedef FetchFormClass
- * @constructor
  */
 export default function Index() {
 
