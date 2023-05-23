@@ -76,7 +76,6 @@ export default function Index() {
   const allImagesLoaded = () => {
     const grid = document.querySelector(".grid");
     const loadedImgsNum = Object.keys(state.images).length;
-    console.log("ALL LOADED", state.images.length, state.loadedImagesCount);
     return state.images.length === state.loadedImagesCount;
   };
 
@@ -84,7 +83,6 @@ export default function Index() {
    * Handles positioning and sizing of imagesUrls.
    */
   const resizeGrid = () => {
-    console.log("resizeGrid");
     const bodyElem = document.querySelector("body");
     const pageWidth = bodyElem.clientWidth - 5;
     let imgLine = [];
@@ -184,7 +182,6 @@ export default function Index() {
       .reduce((count, img) => {
         return count + img.isLoaded;
       }, 0);
-    console.log("UPDATE STATE", stateUpdate);
     setState({ ...state, ...stateUpdate });
   };
 
