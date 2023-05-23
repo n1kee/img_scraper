@@ -30,6 +30,9 @@ class FetchFormClass {
 
 /**
  * Represents an Index page component.
+ * 
+ * @class
+ * @consructor
  */
 export default function Index() {
 
