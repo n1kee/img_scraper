@@ -10,22 +10,40 @@ import { useEffect, useRef } from 'react';
  */
 export const meta: V2_MetaFunction = () => {
   return [{ title: "Image Scraper" }];
-}; 
+};
 
 /**
- * Represents a form for fetching images.
- * @property {string} minWidth - Minimum width of images to be loaded.
- * @property {string} minHeight - Minimum height of images to be loaded.
- * @property {string} url - URL of the webpage where to get images from.
- * @property {String[]} images - List of downloaded image URL's.
+ * Represents an Image.
+ * @property {string} src - Source URL of an image.
+ * @property {float} width - Minimum width of imagesUrls to be loaded.
+ * @property {float} height - Minimum height of imagesUrls to be loaded.
+ * @property {bool} isLoaded - URL of the webpage where to get imagesUrls from.
+ */
+class Image {
+  src: string;
+  width: float;
+  height: float;
+  isLoaded: bool = false;
+
+  constructor(protected src) {
+
+  }
+}
+
+/**
+ * Represents a form for fetching imagesUrls.
+ * @property {string} minWidth - Minimum width of imagesUrls to be loaded.
+ * @property {string} minHeight - Minimum height of imagesUrls to be loaded.
+ * @property {string} url - URL of the webpage where to get imagesUrls from.
+ * @property {String[]} imagesUrls - List of downloaded image URL's.
  */
 class FetchFormClass {
     isLoading: bool = true;
     minWidth: string = "200";
     minHeight: string = "200";
     url: string = "https://symfony.com/blog/new-in-symfony-3-3-optional-class-for-named-services";
-    images: Array<String>[] = [];
-    imagesInfo: Array<String>[] = [];
+    images: Array<Image>[] = [];
+    imagesUrls: Array<String>[] = [];
 }
 
 /**
@@ -41,7 +59,7 @@ export default function Index() {
   const [state, setState] = useState(new FetchFormClass);
   const submitForm = useSubmit();
   const imgWidthRef = useRef(new Map);
-  const imagesInfo = useRef({});
+  const images = useRef({});
 
   /**
    * Returns loader's status.
@@ -52,17 +70,17 @@ export default function Index() {
   };
 
   /**
-   * Checks if all images has been loaded.
-   * @returns {bool} - Indicates if all images has been loaded.
+   * Checks if all imagesUrls has been loaded.
+   * @returns {bool} - Indicates if all imagesUrls has been loaded.
    */
   const allImagesLoaded = () => {
     const grid = document.querySelector(".grid");
-    const loadedImgsNum = Object.keys(imagesInfo.current).length;
+    const loadedImgsNum = Object.keys(images.current).length;
     return state.images.length === loadedImgsNum;
   };
 
   /**
-   * Handles positioning and sizing of images.
+   * Handles positioning and sizing of imagesUrls.
    */
   const onImgResize = () => {
     console.log("onImgResize");
@@ -76,14 +94,14 @@ export default function Index() {
     let freeWidth = rowsNum * pageWidth;
     let originalImgLineWidth = 0;
 
-    Object.values(imagesInfo.current).forEach((imageInfo, idx) => {
+    Object.values(images.current).forEach((imageInfo, idx) => {
       // const img = container.querySelector("img");
 
       const widthDiff = totalImgWidth - freeWidth;
 
       const imgWidth = imageInfo.width;
       originalImgLineWidth += imgWidth;
-      // Collect images line by line and resize them on line overflow.
+      // Collect imagesUrls line by line and resize them on line overflow.
       const imgWidthCoeff = imgWidth / totalImgWidth;
       const newImgWidth = imgWidth - imgWidthCoeff * widthDiff;
       const newImgLineWidth = imgLineWidth + newImgWidth;
@@ -111,7 +129,7 @@ export default function Index() {
         imgLineWidth = newImgLineWidth;
       }
     });
-    updateState({ imagesInfo: Object.values(imagesInfo.current) });
+    updateState({ images: Object.values(images.current) });
   };
 
   /**
@@ -120,10 +138,10 @@ export default function Index() {
    */
   const onImgLoad = ({target: img}) => {
     const clientWidth = img.clientWidth;
-    if (!imagesInfo.current[ img.src ]) {
+    if (!images.current[ img.src ]) {
       const totalImgWidth = imgWidthRef.current.get("total") || 0;
       imgWidthRef.current.set("total", totalImgWidth + clientWidth);
-      imagesInfo.current[ img.src ] = {
+      images.current[ img.src ] = {
         src: img.src,
         width: img.clientWidth,
         height: img.clientHeight,
@@ -132,16 +150,17 @@ export default function Index() {
     if (allImagesLoaded()) {
       const bodyElem = document.querySelector("body");
       bodyElem.onresize = onImgResize;
-      updateState({ imagesInfo: Object.values(imagesInfo.current) });
+      updateState({ images: Object.values(images.current) });
       onImgResize();
     }
   };
 
   useEffect(() => {
-    // Get all stored images on a page load.
+    // Get all stored imagesUrls on a page load.
     API.getAllImages()
-      .then(images => { 
-        updateState({ images, isLoading: false });
+      .then(imagesUrls => {
+        const images = imagesUrls.map(url => new Image(url));
+        updateState({ imagesUrls, isLoading: false });
       });
   }, []); 
 
@@ -172,13 +191,13 @@ export default function Index() {
       isLoading: true
     });
 
-    const images = await API.getImages(
+    const imagesUrls = await API.getImages(
       state.url,
       state.minWidth,
       state.minHeight
     );
     updateState({
-      images,
+      imagesUrls,
       isLoading: false
     });
   };
@@ -250,7 +269,7 @@ export default function Index() {
       </div>
       <div className="grid">
         {
-          state.imagesInfo.map(function(imageInfo, i){
+          state.images.map(function(imageInfo, i){
             return <div
                       key={i}
                       style={containerStyle}
@@ -268,7 +287,7 @@ export default function Index() {
       </div>
       <div style={{position: "absolute", bottom: "110%"}}>
         {
-          state.images.map(function(imageUrl, i){
+          state.imagesUrls.map(function(imageUrl, i){
             return <img
                       key={i}
                       onLoad={onImgLoad}
