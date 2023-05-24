@@ -298,6 +298,8 @@ export default function Index() {
         }
         <div style={{clear: "both"}}></div>
       </div>
+      <!-- Download images invisibly, outside of the page -->
+      <!-- To determine their sizes -->
       <div style={{position: "absolute", bottom: "110%"}}>
         {
           state.imagesUrls.map(function(imageUrl, i){
