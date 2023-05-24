@@ -127,7 +127,7 @@ export default function Index() {
         imgLineWidth = newImgLineWidth;
       }
     });
-    updateState({ });
+    setTimeout(() => updateState({ }), 0);
   };
 
   /**
