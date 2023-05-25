@@ -21,8 +21,8 @@ export const meta: V2_MetaFunction = () => {
  */
 class Image {
   src: string;
-  width: float;
-  height: float;
+  width: float | string = "auto";
+  height: float | string = "auto";
   isLoaded: bool = false;
 
   constructor(protected src) {
@@ -55,11 +55,11 @@ class FetchFormClass {
  */
 export default function Index() {
 
+  const gridClassName = "grid";
   const imgContainerClass = "img-container";
   const imgLoadedClass = "img--loaded";
   const [state, setState] = useState(new FetchFormClass);
   const submitForm = useSubmit();
-  const imgWidthRef = useRef(new Map);
 
   /**
    * Returns loader's status.
@@ -74,9 +74,8 @@ export default function Index() {
    * @returns {bool} - Indicates if all images has been loaded.
    */
   const allImagesLoaded = () => {
-    const grid = document.querySelector(".grid");
-    const loadedImgsNum = Object.keys(state.images).length;
-    return state.images.length === state.loadedImagesCount;
+    const loadedImgs = document.querySelectorAll(`.${imgLoadedClass}`);
+    return state.images.length === loadedImgs.length;
   };
 
   /**
@@ -88,8 +87,11 @@ export default function Index() {
     let imgLine = [];
     let imgLineWidth = 0;
 
-    let totalImgWidth = imgWidthRef.current.get("total");
-    let rowsNum = Math.floor(imgWidthRef.current.get("total") / pageWidth);
+    let totalImgWidth = state.images
+      .reduce((result, img) => {
+        return result + img.width;
+      }, 0);
+    let rowsNum = Math.floor(totalImgWidth / pageWidth);
     let freeWidth = rowsNum * pageWidth;
     let originalImgLineWidth = 0;
 
@@ -136,9 +138,8 @@ export default function Index() {
    */
   const onImgLoad = ({target: img}) => {
     const image = state.images[ img.src ];
+    img.classList.add(imgLoadedClass);
     if (!image.isLoaded) {
-      const totalImgWidth = imgWidthRef.current.get("total") || 0;
-      imgWidthRef.current.set("total", totalImgWidth + img.clientWidth);
       image.src = img.src;
       image.width = img.clientWidth;
       image.height = img.clientHeight;
@@ -203,7 +204,6 @@ export default function Index() {
     updateState({
       isLoading: true
     });
-
     const imagesUrls = await API.getImages(
       state.url,
       state.minWidth,
@@ -280,7 +280,7 @@ export default function Index() {
           <div className="ui text loader">Loading, please wait ...</div>
         </div>
       </div>
-      <div className="grid">
+      <div className={gridClassName}>
         {
           state.images.map(function(image, i){
             return <div
@@ -289,27 +289,17 @@ export default function Index() {
                       className={imgContainerClass}
                     >
                     <img
-                      width={image.calculatedWidth}
                       style={imgStyle}
                       src={image.src}
+                      onLoad={onImgLoad}
+                      width={image.calculatedWidth}
+                      data-width={image.width}
+                      data-height={image.height}
                     />
                   </div>;
           })
         }
         <div style={{clear: "both"}}></div>
-      </div>
-      {/* Download images invisibly, outside of the page */}
-      {/* In order to determine their sizes */}
-      <div style={{position: "absolute", bottom: "110%"}}>
-        {
-          state.imagesUrls.map(function(imageUrl, i){
-            return <img
-                      key={i}
-                      onLoad={onImgLoad}
-                      src={imageUrl}
-                  />;
-          })
-        }
       </div>
     </div>
   );
