@@ -5,7 +5,8 @@
     "build": "remix build",
     "dev": "remix dev --sourcemap",
     "start": "remix-serve build",
-    "typecheck": "tsc"
+    "typecheck": "tsc",
+    "lint": "node_modules/eslint/bin/eslint.js -c ./.eslintrc.js --fix app"
   },
   "dependencies": {
     "@remix-run/css-bundle": "^1.16.0",

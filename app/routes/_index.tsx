@@ -1,9 +1,8 @@
 import type { V2_MetaFunction } from "@remix-run/node";
 import { Form, Button } from 'semantic-ui-react';
 import { useState } from "react";
-import { useSubmit } from "@remix-run/react";
 import { API } from '../api.tsx';
-import { useEffect, useRef } from 'react';
+import { useEffect } from 'react';
 
 /**
  * Meta data of the web page.
@@ -58,8 +57,7 @@ export default function Index() {
   const gridClassName = "grid";
   const imgContainerClass = "img-container";
   const imgLoadedClass = "img--loaded";
-  const [state, setState] = useState(new FetchFormClass);
-  const submitForm = useSubmit();
+  const [state, setState] = useState(new FetchFormClass());
 
   /**
    * Returns loader's status.
@@ -289,6 +287,7 @@ export default function Index() {
                       className={imgContainerClass}
                     >
                     <img
+                      alt=""
                       style={imgStyle}
                       src={image.src}
                       onLoad={onImgLoad}
